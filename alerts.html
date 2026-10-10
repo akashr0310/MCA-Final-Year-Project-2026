@@ -1,0 +1,500 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <!-- Page Header -->
+    <div class="mb-4">
+        <h1>Security Alerts</h1>
+        <p class="text-muted">
+            Monitor and manage detected network security threats
+        </p>
+    </div>
+
+
+    <!-- Alert Statistics -->
+    <div class="row g-4 mb-4">
+
+        <div class="col-md-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="text-muted">Total Alerts</h6>
+                    <h2 id="totalAlerts">0</h2>
+                    <p class="mb-0">Detected security events</p>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-md-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="text-muted">Open Alerts</h6>
+                    <h2 id="openAlerts">0</h2>
+                    <p class="mb-0">Alerts requiring attention</p>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-md-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="text-muted">Critical Alerts</h6>
+                    <h2 id="criticalAlerts">0</h2>
+                    <p class="mb-0">Critical security events</p>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-md-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="text-muted">High Alerts</h6>
+                    <h2 id="highAlerts">0</h2>
+                    <p class="mb-0">High severity events</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- Filters -->
+    <div class="card shadow-sm mb-4">
+
+        <div class="card-body">
+
+            <div class="row g-3">
+
+                <div class="col-md-4">
+
+                    <label for="severityFilter" class="form-label">
+                        Filter by Severity
+                    </label>
+
+                    <select id="severityFilter" class="form-select">
+
+                        <option value="ALL">
+                            All Severities
+                        </option>
+
+                        <option value="CRITICAL">
+                            Critical
+                        </option>
+
+                        <option value="HIGH">
+                            High
+                        </option>
+
+                        <option value="MEDIUM">
+                            Medium
+                        </option>
+
+                        <option value="LOW">
+                            Low
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <label for="statusFilter" class="form-label">
+                        Filter by Status
+                    </label>
+
+                    <select id="statusFilter" class="form-select">
+
+                        <option value="ALL">
+                            All Status
+                        </option>
+
+                        <option value="OPEN">
+                            Open
+                        </option>
+
+                        <option value="CLOSED">
+                            Closed
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <label for="searchAlert" class="form-label">
+                        Search Alerts
+                    </label>
+
+                    <input
+                        type="text"
+                        id="searchAlert"
+                        class="form-control"
+                        placeholder="Search attack or message..."
+                    >
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Alerts Table -->
+    <div class="card shadow-sm">
+
+        <div class="card-header">
+            <h4 class="mb-0">
+                Alert Management
+            </h4>
+        </div>
+
+
+        <div class="card-body">
+
+            {% if alerts %}
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle">
+
+                    <thead class="table-dark">
+
+                        <tr>
+                            <th>ID</th>
+                            <th>Alert</th>
+                            <th>Severity</th>
+                            <th>Status</th>
+                            <th>Created At</th>
+                            <th>Action</th>
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody id="alertsTableBody">
+
+                        {% for alert in alerts %}
+
+                        <tr
+                            class="alert-row"
+                            data-severity="{{ alert.severity }}"
+                            data-status="{{ alert.status }}"
+                            data-message="{{ alert.message|lower }}"
+                        >
+
+                            <td>
+                                {{ alert.id }}
+                            </td>
+
+
+                            <td>
+
+                                <strong>
+                                    {{ alert.message }}
+                                </strong>
+
+                            </td>
+
+
+                            <td>
+
+                                {% if alert.severity == "CRITICAL" %}
+
+                                <span class="badge bg-danger">
+                                    CRITICAL
+                                </span>
+
+                                {% elif alert.severity == "HIGH" %}
+
+                                <span class="badge bg-warning text-dark">
+                                    HIGH
+                                </span>
+
+                                {% elif alert.severity == "MEDIUM" %}
+
+                                <span class="badge bg-info text-dark">
+                                    MEDIUM
+                                </span>
+
+                                {% else %}
+
+                                <span class="badge bg-success">
+                                    LOW
+                                </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <td>
+
+                                {% if alert.status == "OPEN" %}
+
+                                <span class="badge bg-danger">
+                                    OPEN
+                                </span>
+
+                                {% else %}
+
+                                <span class="badge bg-secondary">
+                                    CLOSED
+                                </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <td>
+                                {{ alert.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                            </td>
+
+
+                            <td>
+
+                                {% if alert.status == "OPEN" %}
+
+                                <form
+                                    method="POST"
+                                    action="{{ url_for('close_alert', alert_id=alert.id) }}"
+                                    style="display:inline;"
+                                >
+
+                                    <button
+                                        type="submit"
+                                        class="btn btn-sm btn-success"
+                                        onclick="return confirm('Close this alert?');"
+                                    >
+                                        ✓ Close
+                                    </button>
+
+                                </form>
+
+                                {% else %}
+
+                                <span class="text-muted">
+                                    Closed
+                                </span>
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <div
+                id="noResults"
+                class="text-center text-muted py-4"
+                style="display:none;"
+            >
+                No alerts match the selected filters.
+            </div>
+
+
+            {% else %}
+
+            <div class="text-center py-5">
+
+                <h4>No Security Alerts</h4>
+
+                <p class="text-muted">
+                    No intrusion alerts have been generated yet.
+                </p>
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    // ==========================================
+    // ALERT STATISTICS
+    // ==========================================
+
+    const alertRows = document.querySelectorAll(".alert-row");
+
+    let total = alertRows.length;
+    let open = 0;
+    let critical = 0;
+    let high = 0;
+
+
+    alertRows.forEach(function(row) {
+
+        const severity =
+            row.dataset.severity;
+
+        const status =
+            row.dataset.status;
+
+
+        if (status === "OPEN") {
+            open++;
+        }
+
+
+        if (severity === "CRITICAL") {
+            critical++;
+        }
+
+
+        if (severity === "HIGH") {
+            high++;
+        }
+
+    });
+
+
+    document.getElementById("totalAlerts").textContent =
+        total;
+
+    document.getElementById("openAlerts").textContent =
+        open;
+
+    document.getElementById("criticalAlerts").textContent =
+        critical;
+
+    document.getElementById("highAlerts").textContent =
+        high;
+
+
+    // ==========================================
+    // FILTER FUNCTION
+    // ==========================================
+
+    function filterAlerts() {
+
+        const severity =
+            document.getElementById("severityFilter").value;
+
+        const status =
+            document.getElementById("statusFilter").value;
+
+        const search =
+            document.getElementById("searchAlert").value
+                .toLowerCase()
+                .trim();
+
+
+        let visibleCount = 0;
+
+
+        alertRows.forEach(function(row) {
+
+            const rowSeverity =
+                row.dataset.severity;
+
+            const rowStatus =
+                row.dataset.status;
+
+            const rowMessage =
+                row.dataset.message;
+
+
+            const severityMatch =
+                severity === "ALL" ||
+                rowSeverity === severity;
+
+
+            const statusMatch =
+                status === "ALL" ||
+                rowStatus === status;
+
+
+            const searchMatch =
+                search === "" ||
+                rowMessage.includes(search);
+
+
+            if (
+                severityMatch &&
+                statusMatch &&
+                searchMatch
+            ) {
+
+                row.style.display = "";
+
+                visibleCount++;
+
+            } else {
+
+                row.style.display = "none";
+
+            }
+
+        });
+
+
+        const noResults =
+            document.getElementById("noResults");
+
+
+        if (noResults) {
+
+            noResults.style.display =
+                visibleCount === 0
+                    ? "block"
+                    : "none";
+
+        }
+
+    }
+
+
+    // ==========================================
+    // FILTER EVENTS
+    // ==========================================
+
+    document
+        .getElementById("severityFilter")
+        .addEventListener(
+            "change",
+            filterAlerts
+        );
+
+
+    document
+        .getElementById("statusFilter")
+        .addEventListener(
+            "change",
+            filterAlerts
+        );
+
+
+    document
+        .getElementById("searchAlert")
+        .addEventListener(
+            "input",
+            filterAlerts
+        );
+
+</script>
+
+{% endblock %}

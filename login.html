@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Cybersecurity IDS - Login</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f8fc;
+            color: #14213d;
+        }
+
+        .login-page {
+            min-height: 100vh;
+            display: flex;
+        }
+
+
+        /* ==========================================
+           LEFT PANEL
+        ========================================== */
+
+        .left-panel {
+            width: 58%;
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at 70% 40%,
+                rgba(0, 132, 255, 0.25),
+                transparent 35%),
+                linear-gradient(135deg,
+                #031b33,
+                #062b4d 55%,
+                #021526);
+
+            color: white;
+            padding: 45px 65px;
+            position: relative;
+            overflow: hidden;
+        }
+
+
+        .left-panel::before {
+            content: "";
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            border: 1px solid rgba(0, 157, 255, 0.2);
+            border-radius: 50%;
+            right: -200px;
+            top: 180px;
+        }
+
+
+        .left-panel::after {
+            content: "";
+            position: absolute;
+            width: 450px;
+            height: 450px;
+            border: 1px solid rgba(0, 157, 255, 0.15);
+            border-radius: 50%;
+            right: -100px;
+            top: 260px;
+        }
+
+
+        /* Logo */
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+            z-index: 2;
+        }
+
+
+        .brand-icon {
+            width: 55px;
+            height: 55px;
+            border: 3px solid #168cff;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            background: rgba(0, 123, 255, 0.12);
+        }
+
+
+        .brand-name {
+            font-size: 27px;
+            font-weight: bold;
+        }
+
+
+        .brand-subtitle {
+            font-size: 15px;
+            color: #9dc5e8;
+            margin-top: 4px;
+        }
+
+
+        .tagline {
+            margin-top: 45px;
+            letter-spacing: 6px;
+            font-size: 14px;
+            color: #58b5ff;
+            font-weight: bold;
+        }
+
+
+        /* Main heading */
+
+        .hero {
+            margin-top: 85px;
+            position: relative;
+            z-index: 2;
+            max-width: 650px;
+        }
+
+
+        .hero h1 {
+            font-size: 54px;
+            line-height: 1.08;
+            margin: 0;
+        }
+
+
+        .hero h1 span {
+            color: #1595ff;
+        }
+
+
+        .hero p {
+            font-size: 20px;
+            line-height: 1.6;
+            color: #b7d0e7;
+            max-width: 570px;
+            margin-top: 25px;
+        }
+
+
+        .blue-line {
+            width: 70px;
+            height: 5px;
+            background: #1595ff;
+            border-radius: 5px;
+            margin-top: 25px;
+        }
+
+
+        /* Feature section */
+
+        .features {
+            margin-top: 55px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px 50px;
+            max-width: 650px;
+            position: relative;
+            z-index: 2;
+        }
+
+
+        .feature {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+
+        .feature-icon {
+            width: 62px;
+            height: 62px;
+            min-width: 62px;
+            border-radius: 50%;
+            background: rgba(0, 132, 255, 0.18);
+            border: 1px solid rgba(0, 157, 255, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 27px;
+        }
+
+
+        .feature h3 {
+            margin: 0 0 7px;
+            font-size: 17px;
+        }
+
+
+        .feature p {
+            margin: 0;
+            color: #9ebbd5;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+
+        .quote {
+            margin-top: 70px;
+            border-left: 5px solid #1595ff;
+            padding-left: 20px;
+            color: #b8cde0;
+            font-style: italic;
+            font-size: 16px;
+            position: relative;
+            z-index: 2;
+        }
+
+
+        /* ==========================================
+           RIGHT PANEL
+        ========================================== */
+
+        .right-panel {
+            width: 42%;
+            min-height: 100vh;
+            background: linear-gradient(
+                135deg,
+                #f7fbff,
+                #edf6ff
+            );
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            position: relative;
+        }
+
+
+        .security-label {
+            position: absolute;
+            top: 40px;
+            right: 50px;
+            color: #56708f;
+            font-size: 15px;
+            text-align: right;
+            line-height: 1.5;
+        }
+
+
+        .login-card {
+            width: 100%;
+            max-width: 530px;
+            background: rgba(255,255,255,0.97);
+            border-radius: 20px;
+            padding: 48px 50px;
+            box-shadow:
+                0 20px 60px rgba(31, 67, 103, 0.15);
+        }
+
+
+        .login-card h2 {
+            text-align: center;
+            font-size: 38px;
+            margin: 0;
+        }
+
+
+        .login-subtitle {
+            text-align: center;
+            color: #667b96;
+            margin-top: 10px;
+            margin-bottom: 42px;
+            font-size: 16px;
+        }
+
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 9px;
+            font-size: 15px;
+        }
+
+
+        .input-wrapper {
+            position: relative;
+        }
+
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 16px 48px 16px 17px;
+            border: 1px solid #d4e0ec;
+            border-radius: 10px;
+            font-size: 16px;
+            outline: none;
+            transition: 0.2s;
+        }
+
+
+        .input-wrapper input:focus {
+            border-color: #1677ff;
+            box-shadow: 0 0 0 3px rgba(22,119,255,0.12);
+        }
+
+
+        .input-icon {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #657c96;
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+
+        .forgot {
+            display: block;
+            text-align: right;
+            margin-top: -8px;
+            margin-bottom: 25px;
+        }
+
+
+        .forgot a {
+            color: #086fff;
+            font-weight: bold;
+            text-decoration: underline;
+            font-size: 14px;
+        }
+
+
+        .login-button {
+            width: 100%;
+            border: none;
+            border-radius: 10px;
+            padding: 16px;
+            background: linear-gradient(
+                90deg,
+                #126cff,
+                #187cf5
+            );
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+
+        .login-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(18,108,255,0.25);
+        }
+
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 30px 0;
+            color: #7a8ba0;
+        }
+
+
+        .divider::before,
+        .divider::after {
+            content: "";
+            height: 1px;
+            background: #dbe4ed;
+            flex: 1;
+        }
+
+
+        .register {
+            text-align: center;
+            color: #667b96;
+        }
+
+
+        .register a {
+            color: #086fff;
+            font-weight: bold;
+            text-decoration: underline;
+            margin-left: 5px;
+        }
+
+
+        .security-footer {
+            margin-top: 35px;
+            text-align: center;
+            color: #7890a9;
+            font-size: 14px;
+        }
+
+
+        .error-message {
+            background: #ffe5e5;
+            color: #b42318;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+
+        /* ==========================================
+           RESPONSIVE
+        ========================================== */
+
+        @media (max-width: 1000px) {
+
+            .login-page {
+                display: block;
+            }
+
+            .left-panel,
+            .right-panel {
+                width: 100%;
+            }
+
+            .left-panel {
+                min-height: auto;
+                padding: 35px;
+            }
+
+            .hero {
+                margin-top: 50px;
+            }
+
+            .hero h1 {
+                font-size: 42px;
+            }
+
+            .right-panel {
+                min-height: auto;
+                padding: 60px 25px;
+            }
+
+            .security-label {
+                display: none;
+            }
+
+        }
+
+
+        @media (max-width: 600px) {
+
+            .features {
+                grid-template-columns: 1fr;
+            }
+
+            .left-panel {
+                padding: 30px 25px;
+            }
+
+            .login-card {
+                padding: 35px 25px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="login-page">
+
+
+    <!-- ==========================================
+         LEFT SIDE
+    =========================================== -->
+
+    <section class="left-panel">
+
+        <div class="brand">
+
+            <div class="brand-icon">
+                🛡️
+            </div>
+
+            <div>
+
+                <div class="brand-name">
+                    Cybersecurity IDS
+                </div>
+
+                <div class="brand-subtitle">
+                    Intrusion Detection System
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="tagline">
+            DETECT &nbsp;|&nbsp; ANALYZE &nbsp;|&nbsp; PROTECT
+        </div>
+
+
+        <div class="hero">
+
+            <h1>
+                AI-Powered
+                <br>
+
+                <span>
+                    Network Security
+                </span>
+
+                <br>
+
+                Monitoring
+            </h1>
+
+
+            <p>
+                Detect threats. Analyze traffic.
+                Keep your network safe.
+            </p>
+
+
+            <div class="blue-line"></div>
+
+        </div>
+
+
+        <div class="features">
+
+
+            <div class="feature">
+
+                <div class="feature-icon">
+                    🔍
+                </div>
+
+                <div>
+
+                    <h3>
+                        Real-time Detection
+                    </h3>
+
+                    <p>
+                        Identify network threats
+                        in real time
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="feature">
+
+                <div class="feature-icon">
+                    📊
+                </div>
+
+                <div>
+
+                    <h3>
+                        Machine Learning
+                    </h3>
+
+                    <p>
+                        Powered by UNSW-NB15
+                        dataset
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="feature">
+
+                <div class="feature-icon">
+                    🛡️
+                </div>
+
+                <div>
+
+                    <h3>
+                        Threat Alerts
+                    </h3>
+
+                    <p>
+                        Get instant notifications
+                        for attacks
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="feature">
+
+                <div class="feature-icon">
+                    🔗
+                </div>
+
+                <div>
+
+                    <h3>
+                        Safer Networks
+                    </h3>
+
+                    <p>
+                        Build a more secure
+                        digital environment
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="quote">
+            "A Safer Digital World Through Intelligent Detection"
+        </div>
+
+    </section>
+
+
+
+    <!-- ==========================================
+         RIGHT SIDE
+    =========================================== -->
+
+    <section class="right-panel">
+
+
+        <div class="security-label">
+
+            🛡️
+
+            <br>
+
+            <strong>
+                Secure Networks
+            </strong>
+
+            <br>
+
+            Safer Tomorrow
+
+        </div>
+
+
+        <div class="login-card">
+
+
+            <h2>
+                Welcome Back
+            </h2>
+
+
+            <div class="login-subtitle">
+                Login to your Cybersecurity IDS account
+            </div>
+
+
+            {% if error %}
+
+            <div class="error-message">
+                {{ error }}
+            </div>
+
+            {% endif %}
+
+
+            <form method="POST"
+                  action="{{ url_for('login') }}">
+
+
+                <!-- Username -->
+
+                <div class="form-group">
+
+                    <label for="username">
+                        👤 Username
+                    </label>
+
+                    <div class="input-wrapper">
+
+                        <input
+                            type="text"
+                            id="username"
+                            name="username"
+                            placeholder="Enter your username"
+                            required
+                            autocomplete="username"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <!-- Password -->
+
+                <div class="form-group">
+
+                    <label for="password">
+                        🔒 Password
+                    </label>
+
+                    <div class="input-wrapper">
+
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="Enter your password"
+                            required
+                            autocomplete="current-password"
+                        >
+
+                        <span
+                            class="input-icon"
+                            onclick="togglePassword()"
+                            id="passwordIcon"
+                        >
+                            👁
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Forgot Password -->
+
+                <div class="forgot">
+
+                    <a href="{{ url_for('forgot_password') }}">
+                        Forgot Password?
+                    </a>
+
+                </div>
+
+
+                <!-- Login -->
+
+                <button
+                    type="submit"
+                    class="login-button"
+                >
+                    Login &nbsp; →
+                </button>
+
+
+            </form>
+
+
+            <div class="divider">
+                OR
+            </div>
+
+
+            <div class="register">
+
+                Don't have an account?
+
+                <a href="{{ url_for('register') }}">
+                    Register
+                </a>
+
+            </div>
+
+
+            <div class="security-footer">
+                🔐 Your Security is Our Priority
+            </div>
+
+
+        </div>
+
+    </section>
+
+</div>
+
+
+<script>
+
+function togglePassword() {
+
+    const password =
+        document.getElementById("password");
+
+    const icon =
+        document.getElementById("passwordIcon");
+
+
+    if (password.type === "password") {
+
+        password.type = "text";
+
+        icon.textContent = "🙈";
+
+    } else {
+
+        password.type = "password";
+
+        icon.textContent = "👁";
+
+    }
+
+}
+
+</script>
+
+</body>
+
+</html>

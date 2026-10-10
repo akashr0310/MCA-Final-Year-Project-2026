@@ -1,0 +1,508 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <!-- Dashboard Header -->
+    <div class="mb-4">
+        <h1>Cybersecurity Intrusion Detection Dashboard</h1>
+        <p class="text-muted">
+            Machine Learning-Based Network Security Monitoring
+        </p>
+    </div>
+
+
+    <!-- Main Statistics -->
+    <div class="row g-4 mb-4">
+
+        <div class="col-md-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="text-muted">Total Predictions</h6>
+                    <h2>{{ total_predictions }}</h2>
+                    <p class="mb-0">Network records analyzed</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="text-muted">Normal Traffic</h6>
+                    <h2>{{ normal_predictions }}</h2>
+                    <p class="mb-0">Normal network activity</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="text-muted">Malicious Traffic</h6>
+                    <h2>{{ malicious_predictions }}</h2>
+                    <p class="mb-0">Threats detected</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="text-muted">Critical Threats</h6>
+                    <h2>{{ critical_threats }}</h2>
+                    <p class="mb-0">Critical severity detections</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- Severity Cards -->
+    <div class="row g-4 mb-4">
+
+        <div class="col-md-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5>CRITICAL</h5>
+                    <h3>{{ critical_threats }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5>HIGH</h5>
+                    <h3>{{ high_threats }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5>MEDIUM</h5>
+                    <h3>{{ medium_threats }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5>LOW</h5>
+                    <h3>{{ low_threats }}</h3>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- Charts -->
+    <div class="row g-4 mb-4">
+
+        <!-- Normal vs Malicious -->
+        <div class="col-md-4">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-header">
+                    <h4 class="mb-0">Traffic Classification</h4>
+                </div>
+
+                <div class="card-body">
+
+                    <div style="height:300px;">
+                        <canvas id="trafficChart"></canvas>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Severity -->
+        <div class="col-md-4">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-header">
+                    <h4 class="mb-0">Severity Distribution</h4>
+                </div>
+
+                <div class="card-body">
+
+                    <div style="height:300px;">
+                        <canvas id="severityChart"></canvas>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Attack Categories -->
+        <div class="col-md-4">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-header">
+                    <h4 class="mb-0">Attack Categories</h4>
+                </div>
+
+                <div class="card-body">
+
+                    <div style="height:300px;">
+                        <canvas id="attackChart"></canvas>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Attack Category and Recent Alerts -->
+    <div class="row g-4 mb-4">
+
+        <!-- Attack Category Table -->
+        <div class="col-md-6">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-header">
+                    <h4 class="mb-0">Attack Category Summary</h4>
+                </div>
+
+                <div class="card-body">
+
+                    {% if attack_counts %}
+
+                    <div class="table-responsive">
+
+                        <table class="table table-striped">
+
+                            <thead>
+                                <tr>
+                                    <th>Prediction</th>
+                                    <th>Count</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                {% for attack, count in attack_counts.items() %}
+
+                                <tr>
+                                    <td>{{ attack }}</td>
+                                    <td>{{ count }}</td>
+                                </tr>
+
+                                {% endfor %}
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                    {% else %}
+
+                    <p class="text-muted">
+                        No prediction data available.
+                    </p>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Recent Alerts -->
+        <div class="col-md-6">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-header">
+                    <h4 class="mb-0">Recent Alerts</h4>
+                </div>
+
+                <div class="card-body">
+
+                    {% if recent_alerts %}
+
+                    <div class="table-responsive">
+
+                        <table class="table table-striped">
+
+                            <thead>
+                                <tr>
+                                    <th>Attack</th>
+                                    <th>Severity</th>
+                                    <th>Status</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                {% for alert in recent_alerts %}
+
+                                <tr>
+
+                                    <td>{{ alert.message }}</td>
+
+                                    <td>{{ alert.severity }}</td>
+
+                                    <td>{{ alert.status }}</td>
+
+                                    <td>
+                                        {{ alert.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                                    </td>
+
+                                </tr>
+
+                                {% endfor %}
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                    {% else %}
+
+                    <p class="text-muted">
+                        No alerts available.
+                    </p>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Recent Predictions -->
+    <div class="card shadow-sm mb-4">
+
+        <div class="card-header">
+            <h4 class="mb-0">Recent Predictions</h4>
+        </div>
+
+        <div class="card-body">
+
+            {% if recent_predictions %}
+
+            <div class="table-responsive">
+
+                <table class="table table-striped">
+
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Protocol</th>
+                            <th>Prediction</th>
+                            <th>Confidence</th>
+                            <th>Severity</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for item in recent_predictions %}
+
+                        <tr>
+
+                            <td>
+                                {{ item.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                            </td>
+
+                            <td>{{ item.protocol }}</td>
+
+                            <td>{{ item.prediction }}</td>
+
+                            <td>
+                                {{ "%.2f"|format(item.confidence * 100) }}%
+                            </td>
+
+                            <td>{{ item.severity }}</td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            {% else %}
+
+            <p class="text-muted">
+                No predictions available.
+            </p>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+<script>
+
+    // Data received from Flask
+    const trafficData = {{ traffic_chart | tojson }};
+    const severityData = {{ severity_chart | tojson }};
+    const attackData = {{ attack_chart | tojson }};
+
+
+    // ==========================================
+    // 1. NORMAL VS MALICIOUS TRAFFIC
+    // ==========================================
+
+    new Chart(
+        document.getElementById("trafficChart"),
+        {
+            type: "doughnut",
+
+            data: {
+                labels: Object.keys(trafficData),
+
+                datasets: [{
+                    data: Object.values(trafficData),
+
+                    backgroundColor: [
+                        "#198754",
+                        "#dc3545"
+                    ]
+                }]
+            },
+
+            options: {
+                responsive: true,
+
+                maintainAspectRatio: false,
+
+                plugins: {
+                    legend: {
+                        position: "bottom"
+                    }
+                }
+            }
+        }
+    );
+
+
+    // ==========================================
+    // 2. SEVERITY DISTRIBUTION
+    // ==========================================
+
+    new Chart(
+        document.getElementById("severityChart"),
+        {
+            type: "doughnut",
+
+            data: {
+                labels: Object.keys(severityData),
+
+                datasets: [{
+                    data: Object.values(severityData),
+
+                    backgroundColor: [
+                        "#dc3545",
+                        "#fd7e14",
+                        "#ffc107",
+                        "#198754"
+                    ]
+                }]
+            },
+
+            options: {
+                responsive: true,
+
+                maintainAspectRatio: false,
+
+                plugins: {
+                    legend: {
+                        position: "bottom"
+                    }
+                }
+            }
+        }
+    );
+
+
+    // ==========================================
+    // 3. ATTACK CATEGORY DISTRIBUTION
+    // ==========================================
+
+    new Chart(
+        document.getElementById("attackChart"),
+        {
+            type: "bar",
+
+            data: {
+                labels: Object.keys(attackData),
+
+                datasets: [{
+                    label: "Number of Predictions",
+
+                    data: Object.values(attackData),
+
+                    backgroundColor: "#0d6efd"
+                }]
+            },
+
+            options: {
+                responsive: true,
+
+                maintainAspectRatio: false,
+
+                scales: {
+                    y: {
+                        beginAtZero: true,
+
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                },
+
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        }
+    );
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,1507 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+    .history-page {
+        padding: 30px 0 50px;
+    }
+
+    .page-title {
+        font-size: 36px;
+        font-weight: 700;
+        color: #172033;
+        margin-bottom: 5px;
+    }
+
+    .page-subtitle {
+        color: #687386;
+        margin-bottom: 28px;
+        font-size: 15px;
+    }
+
+    /* Summary Cards */
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+        margin-bottom: 25px;
+    }
+
+    .summary-card {
+        background: white;
+        border-radius: 14px;
+        padding: 20px;
+        border: 1px solid #e1e6ed;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .summary-card::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 5px;
+    }
+
+    .summary-card.total::before {
+        background: #34495e;
+    }
+
+    .summary-card.normal::before {
+        background: #20a464;
+    }
+
+    .summary-card.malicious::before {
+        background: #e74c3c;
+    }
+
+    .summary-card.critical::before {
+        background: #8e2de2;
+    }
+
+    .summary-label {
+        color: #778296;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    .summary-value {
+        font-size: 30px;
+        font-weight: 700;
+        color: #172033;
+    }
+
+    .summary-icon {
+        float: right;
+        font-size: 25px;
+    }
+
+    /* Chart */
+    .chart-card {
+        background: white;
+        border: 1px solid #e1e6ed;
+        border-radius: 14px;
+        padding: 22px;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+    }
+
+    .section-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #172033;
+        margin-bottom: 15px;
+    }
+
+    .chart-container {
+        height: 260px;
+        position: relative;
+    }
+
+    /* Filter */
+    .filter-card {
+        background: white;
+        border: 1px solid #e1e6ed;
+        border-radius: 14px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+    }
+
+    .filter-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 15px;
+    }
+
+    .filter-input,
+    .filter-select {
+        width: 100%;
+        padding: 11px 13px;
+        border: 1px solid #d7dde5;
+        border-radius: 8px;
+        font-size: 14px;
+        outline: none;
+        background: white;
+    }
+
+    .filter-input:focus,
+    .filter-select:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59,130,246,0.10);
+    }
+
+    .filter-buttons {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .btn-history {
+        border: none;
+        border-radius: 8px;
+        padding: 10px 17px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .btn-clear {
+        background: #eef1f5;
+        color: #344054;
+    }
+
+    .btn-export {
+        background: #1f2937;
+        color: white;
+    }
+
+    .btn-history:hover {
+        opacity: 0.9;
+    }
+
+    /* Table */
+    .table-card {
+        background: white;
+        border: 1px solid #e1e6ed;
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+    }
+
+    .table-header {
+        padding: 18px 20px;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .record-count {
+        color: #718096;
+        font-size: 14px;
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+    }
+
+    .history-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 1100px;
+    }
+
+    .history-table th {
+        background: #20242a;
+        color: white;
+        padding: 14px 12px;
+        text-align: left;
+        font-size: 13px;
+        white-space: nowrap;
+    }
+
+    .history-table td {
+        padding: 14px 12px;
+        border-bottom: 1px solid #edf0f4;
+        font-size: 14px;
+        color: #263142;
+        white-space: nowrap;
+    }
+
+    .history-table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    /* Badges */
+    .badge {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .badge-low {
+        background: #e8f8ef;
+        color: #16834d;
+    }
+
+    .badge-medium {
+        background: #fff5d9;
+        color: #a36a00;
+    }
+
+    .badge-high {
+        background: #ffe9df;
+        color: #c4511a;
+    }
+
+    .badge-critical {
+        background: #f2e5ff;
+        color: #7928b5;
+    }
+
+    .badge-normal {
+        background: #e8f8ef;
+        color: #16834d;
+    }
+
+    .badge-malicious {
+        background: #ffe7e7;
+        color: #c0392b;
+    }
+
+    .source-badge {
+        background: #edf3ff;
+        color: #3567b8;
+        padding: 5px 9px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .view-btn {
+        background: #edf3ff;
+        color: #2563eb;
+        border: none;
+        border-radius: 7px;
+        padding: 7px 12px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 12px;
+    }
+
+    .view-btn:hover {
+        background: #dbeafe;
+    }
+
+    /* Pagination */
+    .pagination-area {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 6px;
+        padding: 20px;
+    }
+
+    .page-btn {
+        border: 1px solid #d7dde5;
+        background: white;
+        color: #344054;
+        border-radius: 7px;
+        padding: 7px 11px;
+        cursor: pointer;
+        font-size: 13px;
+    }
+
+    .page-btn.active {
+        background: #1f2937;
+        color: white;
+        border-color: #1f2937;
+    }
+
+    .page-btn:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+    }
+
+    /* Modal */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.65);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .modal-overlay.show {
+        display: flex;
+    }
+
+    .detail-modal {
+        width: 100%;
+        max-width: 600px;
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+    }
+
+    .modal-header {
+        background: #20242a;
+        color: white;
+        padding: 18px 22px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-header h3 {
+        margin: 0;
+        font-size: 19px;
+    }
+
+    .close-modal {
+        background: transparent;
+        color: white;
+        border: none;
+        font-size: 25px;
+        cursor: pointer;
+    }
+
+    .modal-body {
+        padding: 22px;
+    }
+
+    .detail-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    .detail-item {
+        background: #f7f9fc;
+        border-radius: 9px;
+        padding: 13px;
+    }
+
+    .detail-label {
+        font-size: 11px;
+        color: #7a8495;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+    }
+
+    .detail-value {
+        color: #172033;
+        font-size: 14px;
+        font-weight: 600;
+        word-break: break-word;
+    }
+
+    /* Empty */
+    .empty-row {
+        text-align: center !important;
+        padding: 45px !important;
+        color: #7b8798 !important;
+    }
+
+    @media (max-width: 1000px) {
+        .summary-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .filter-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .summary-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .filter-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .page-title {
+            font-size: 28px;
+        }
+
+        .detail-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+
+<div class="history-page">
+
+    <h1 class="page-title">Prediction History</h1>
+
+    <p class="page-subtitle">
+        Review, search and analyze previously detected network traffic
+    </p>
+
+
+    <!-- ================= SUMMARY CARDS ================= -->
+
+    <div class="summary-grid">
+
+        <div class="summary-card total">
+            <div class="summary-icon">📊</div>
+            <div class="summary-label">Total Predictions</div>
+            <div class="summary-value" id="totalCount">0</div>
+        </div>
+
+        <div class="summary-card normal">
+            <div class="summary-icon">✓</div>
+            <div class="summary-label">Normal Traffic</div>
+            <div class="summary-value" id="normalCount">0</div>
+        </div>
+
+        <div class="summary-card malicious">
+            <div class="summary-icon">⚠</div>
+            <div class="summary-label">Malicious Traffic</div>
+            <div class="summary-value" id="maliciousCount">0</div>
+        </div>
+
+        <div class="summary-card critical">
+            <div class="summary-icon">🚨</div>
+            <div class="summary-label">Critical Threats</div>
+            <div class="summary-value" id="criticalCount">0</div>
+        </div>
+
+    </div>
+
+
+    <!-- ================= CHART ================= -->
+
+    <div class="chart-card">
+
+        <div class="section-title">
+            Prediction Activity
+        </div>
+
+        <div class="chart-container">
+            <canvas id="historyChart"></canvas>
+        </div>
+
+    </div>
+
+
+    <!-- ================= FILTERS ================= -->
+
+    <div class="filter-card">
+
+        <div class="section-title">
+            Search & Filter
+        </div>
+
+        <div class="filter-grid">
+
+            <input
+                type="text"
+                id="searchInput"
+                class="filter-input"
+                placeholder="🔎 Search IP, prediction, protocol..."
+            >
+
+            <select id="predictionFilter" class="filter-select">
+
+                <option value="">All Predictions</option>
+                <option value="Normal">Normal</option>
+                <option value="DoS">DoS</option>
+                <option value="Exploits">Exploits</option>
+                <option value="Generic">Generic</option>
+                <option value="Fuzzers">Fuzzers</option>
+                <option value="Reconnaissance">Reconnaissance</option>
+                <option value="Analysis">Analysis</option>
+                <option value="Backdoors">Backdoors</option>
+                <option value="Shellcode">Shellcode</option>
+                <option value="Worms">Worms</option>
+
+            </select>
+
+
+            <select id="severityFilter" class="filter-select">
+
+                <option value="">All Severity</option>
+                <option value="LOW">LOW</option>
+                <option value="MEDIUM">MEDIUM</option>
+                <option value="HIGH">HIGH</option>
+                <option value="CRITICAL">CRITICAL</option>
+
+            </select>
+
+
+            <select id="sourceFilter" class="filter-select">
+
+                <option value="">All Sources</option>
+                <option value="CSV Upload">CSV Upload</option>
+                <option value="Real-Time Simulator">Real-Time Simulator</option>
+
+            </select>
+
+        </div>
+
+
+        <div class="filter-buttons">
+
+            <button
+                class="btn-history btn-clear"
+                onclick="clearFilters()">
+                Clear Filters
+            </button>
+
+            <button
+                class="btn-history btn-export"
+                onclick="exportCSV()">
+                ↓ Export CSV
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= TABLE ================= -->
+
+    <div class="table-card">
+
+        <div class="table-header">
+
+            <div class="section-title" style="margin:0;">
+                Detection Records
+            </div>
+
+            <div class="record-count">
+                Showing <span id="visibleCount">0</span> records
+            </div>
+
+        </div>
+
+
+        <div class="table-wrapper">
+
+            <table class="history-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>ID</th>
+                        <th>Date / Time</th>
+                        <th>Source</th>
+                        <th>Destination</th>
+                        <th>Protocol</th>
+                        <th>Prediction</th>
+                        <th>Confidence</th>
+                        <th>Severity</th>
+                        <th>Action</th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody id="historyTableBody">
+
+                {% for p in predictions %}
+
+                    <tr
+                        data-id="{{ p.id }}"
+                        data-date="{{ p.created_at.strftime('%Y-%m-%d %H:%M:%S') }}"
+                        data-source="{{ p.source_ip }}"
+                        data-destination="{{ p.destination_ip }}"
+                        data-protocol="{{ p.protocol }}"
+                        data-prediction="{{ p.prediction }}"
+                        data-confidence="{{ '%.2f'|format(p.confidence * 100) }}"
+                        data-severity="{{ p.severity }}"
+                    >
+
+                        <td>
+                            <strong>{{ p.id }}</strong>
+                        </td>
+
+
+                        <td>
+                            {{ p.created_at.strftime('%d-%m-%Y %H:%M:%S') }}
+                        </td>
+
+
+                        <td>
+
+                            <span class="source-badge">
+                                {{ p.source_ip }}
+                            </span>
+
+                        </td>
+
+
+                        <td>
+                            {{ p.destination_ip }}
+                        </td>
+
+
+                        <td>
+                            {{ p.protocol|upper }}
+                        </td>
+
+
+                        <td>
+
+                            {% if p.prediction == "Normal" %}
+
+                                <span class="badge badge-normal">
+                                    Normal
+                                </span>
+
+                            {% else %}
+
+                                <span class="badge badge-malicious">
+                                    {{ p.prediction }}
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+                            {{ "%.2f"|format(p.confidence * 100) }}%
+                        </td>
+
+
+                        <td>
+
+                            {% if p.severity == "CRITICAL" %}
+
+                                <span class="badge badge-critical">
+                                    CRITICAL
+                                </span>
+
+                            {% elif p.severity == "HIGH" %}
+
+                                <span class="badge badge-high">
+                                    HIGH
+                                </span>
+
+                            {% elif p.severity == "MEDIUM" %}
+
+                                <span class="badge badge-medium">
+                                    MEDIUM
+                                </span>
+
+                            {% else %}
+
+                                <span class="badge badge-low">
+                                    LOW
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+
+                            <button
+                                class="view-btn"
+                                onclick="viewDetails(this)">
+                                View
+                            </button>
+
+                        </td>
+
+                    </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <!-- Pagination -->
+
+        <div class="pagination-area" id="pagination"></div>
+
+    </div>
+
+</div>
+
+
+<!-- ================= DETAILS MODAL ================= -->
+
+<div
+    id="detailsModal"
+    class="modal-overlay"
+    onclick="closeModalOutside(event)"
+>
+
+    <div class="detail-modal">
+
+        <div class="modal-header">
+
+            <h3>Prediction Details</h3>
+
+            <button
+                class="close-modal"
+                onclick="closeDetails()">
+                ×
+            </button>
+
+        </div>
+
+
+        <div class="modal-body">
+
+            <div class="detail-grid">
+
+                <div class="detail-item">
+
+                    <div class="detail-label">
+                        Prediction ID
+                    </div>
+
+                    <div
+                        class="detail-value"
+                        id="detailId">
+                    </div>
+
+                </div>
+
+
+                <div class="detail-item">
+
+                    <div class="detail-label">
+                        Date / Time
+                    </div>
+
+                    <div
+                        class="detail-value"
+                        id="detailDate">
+                    </div>
+
+                </div>
+
+
+                <div class="detail-item">
+
+                    <div class="detail-label">
+                        Source
+                    </div>
+
+                    <div
+                        class="detail-value"
+                        id="detailSource">
+                    </div>
+
+                </div>
+
+
+                <div class="detail-item">
+
+                    <div class="detail-label">
+                        Destination
+                    </div>
+
+                    <div
+                        class="detail-value"
+                        id="detailDestination">
+                    </div>
+
+                </div>
+
+
+                <div class="detail-item">
+
+                    <div class="detail-label">
+                        Protocol
+                    </div>
+
+                    <div
+                        class="detail-value"
+                        id="detailProtocol">
+                    </div>
+
+                </div>
+
+
+                <div class="detail-item">
+
+                    <div class="detail-label">
+                        Prediction
+                    </div>
+
+                    <div
+                        class="detail-value"
+                        id="detailPrediction">
+                    </div>
+
+                </div>
+
+
+                <div class="detail-item">
+
+                    <div class="detail-label">
+                        Confidence
+                    </div>
+
+                    <div
+                        class="detail-value"
+                        id="detailConfidence">
+                    </div>
+
+                </div>
+
+
+                <div class="detail-item">
+
+                    <div class="detail-label">
+                        Severity
+                    </div>
+
+                    <div
+                        class="detail-value"
+                        id="detailSeverity">
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- Chart.js -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+<script>
+
+let allRows = [];
+let filteredRows = [];
+
+let currentPage = 1;
+const rowsPerPage = 10;
+
+
+/* ==========================================
+   LOAD TABLE ROWS
+========================================== */
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    allRows = Array.from(
+        document.querySelectorAll("#historyTableBody tr")
+    );
+
+    filteredRows = [...allRows];
+
+    updateSummary();
+    applyFilters();
+    createChart();
+
+});
+
+
+/* ==========================================
+   SUMMARY
+========================================== */
+
+function updateSummary() {
+
+    let normal = 0;
+    let malicious = 0;
+    let critical = 0;
+
+    allRows.forEach(row => {
+
+        const prediction =
+            row.dataset.prediction;
+
+        const severity =
+            row.dataset.severity;
+
+        if (prediction === "Normal") {
+
+            normal++;
+
+        } else {
+
+            malicious++;
+
+        }
+
+        if (severity === "CRITICAL") {
+
+            critical++;
+
+        }
+
+    });
+
+
+    document.getElementById("totalCount")
+        .textContent = allRows.length;
+
+    document.getElementById("normalCount")
+        .textContent = normal;
+
+    document.getElementById("maliciousCount")
+        .textContent = malicious;
+
+    document.getElementById("criticalCount")
+        .textContent = critical;
+
+}
+
+
+/* ==========================================
+   FILTERS
+========================================== */
+
+document.getElementById("searchInput")
+    .addEventListener("input", applyFilters);
+
+document.getElementById("predictionFilter")
+    .addEventListener("change", applyFilters);
+
+document.getElementById("severityFilter")
+    .addEventListener("change", applyFilters);
+
+document.getElementById("sourceFilter")
+    .addEventListener("change", applyFilters);
+
+
+function applyFilters() {
+
+    const search =
+        document.getElementById("searchInput")
+        .value
+        .toLowerCase()
+        .trim();
+
+
+    const prediction =
+        document.getElementById("predictionFilter")
+        .value;
+
+
+    const severity =
+        document.getElementById("severityFilter")
+        .value;
+
+
+    const source =
+        document.getElementById("sourceFilter")
+        .value;
+
+
+    filteredRows = allRows.filter(row => {
+
+        const text =
+            row.innerText.toLowerCase();
+
+        const rowPrediction =
+            row.dataset.prediction;
+
+        const rowSeverity =
+            row.dataset.severity;
+
+        const rowSource =
+            row.dataset.source;
+
+
+        const matchesSearch =
+            !search ||
+            text.includes(search);
+
+
+        const matchesPrediction =
+            !prediction ||
+            rowPrediction === prediction;
+
+
+        const matchesSeverity =
+            !severity ||
+            rowSeverity === severity;
+
+
+        const matchesSource =
+            !source ||
+            rowSource === source;
+
+
+        return (
+            matchesSearch &&
+            matchesPrediction &&
+            matchesSeverity &&
+            matchesSource
+        );
+
+    });
+
+
+    currentPage = 1;
+
+    renderTable();
+
+}
+
+
+/* ==========================================
+   PAGINATION
+========================================== */
+
+function renderTable() {
+
+    allRows.forEach(row => {
+
+        row.style.display = "none";
+
+    });
+
+
+    const start =
+        (currentPage - 1) * rowsPerPage;
+
+    const end =
+        start + rowsPerPage;
+
+
+    const pageRows =
+        filteredRows.slice(start, end);
+
+
+    pageRows.forEach(row => {
+
+        row.style.display = "";
+
+    });
+
+
+    document.getElementById("visibleCount")
+        .textContent = filteredRows.length;
+
+
+    renderPagination();
+
+}
+
+
+function renderPagination() {
+
+    const pagination =
+        document.getElementById("pagination");
+
+
+    pagination.innerHTML = "";
+
+
+    const totalPages =
+        Math.ceil(
+            filteredRows.length / rowsPerPage
+        );
+
+
+    if (totalPages <= 1) {
+
+        return;
+
+    }
+
+
+    const previous =
+        document.createElement("button");
+
+    previous.className = "page-btn";
+
+    previous.textContent = "←";
+
+    previous.disabled =
+        currentPage === 1;
+
+
+    previous.onclick = function () {
+
+        if (currentPage > 1) {
+
+            currentPage--;
+
+            renderTable();
+
+        }
+
+    };
+
+
+    pagination.appendChild(previous);
+
+
+    for (
+        let i = 1;
+        i <= totalPages;
+        i++
+    ) {
+
+        const button =
+            document.createElement("button");
+
+        button.className = "page-btn";
+
+        if (i === currentPage) {
+
+            button.classList.add("active");
+
+        }
+
+        button.textContent = i;
+
+
+        button.onclick = function () {
+
+            currentPage = i;
+
+            renderTable();
+
+        };
+
+
+        pagination.appendChild(button);
+
+    }
+
+
+    const next =
+        document.createElement("button");
+
+    next.className = "page-btn";
+
+    next.textContent = "→";
+
+    next.disabled =
+        currentPage === totalPages;
+
+
+    next.onclick = function () {
+
+        if (currentPage < totalPages) {
+
+            currentPage++;
+
+            renderTable();
+
+        }
+
+    };
+
+
+    pagination.appendChild(next);
+
+}
+
+
+/* ==========================================
+   CLEAR FILTERS
+========================================== */
+
+function clearFilters() {
+
+    document.getElementById("searchInput")
+        .value = "";
+
+    document.getElementById("predictionFilter")
+        .value = "";
+
+    document.getElementById("severityFilter")
+        .value = "";
+
+    document.getElementById("sourceFilter")
+        .value = "";
+
+
+    applyFilters();
+
+}
+
+
+/* ==========================================
+   VIEW DETAILS
+========================================== */
+
+function viewDetails(button) {
+
+    const row =
+        button.closest("tr");
+
+
+    document.getElementById("detailId")
+        .textContent =
+        row.dataset.id;
+
+
+    document.getElementById("detailDate")
+        .textContent =
+        row.dataset.date;
+
+
+    document.getElementById("detailSource")
+        .textContent =
+        row.dataset.source;
+
+
+    document.getElementById("detailDestination")
+        .textContent =
+        row.dataset.destination;
+
+
+    document.getElementById("detailProtocol")
+        .textContent =
+        row.dataset.protocol.toUpperCase();
+
+
+    document.getElementById("detailPrediction")
+        .textContent =
+        row.dataset.prediction;
+
+
+    document.getElementById("detailConfidence")
+        .textContent =
+        row.dataset.confidence + "%";
+
+
+    document.getElementById("detailSeverity")
+        .textContent =
+        row.dataset.severity;
+
+
+    document.getElementById("detailsModal")
+        .classList.add("show");
+
+}
+
+
+function closeDetails() {
+
+    document.getElementById("detailsModal")
+        .classList.remove("show");
+
+}
+
+
+function closeModalOutside(event) {
+
+    if (
+        event.target.id === "detailsModal"
+    ) {
+
+        closeDetails();
+
+    }
+
+}
+
+
+/* ==========================================
+   EXPORT CSV
+========================================== */
+
+function exportCSV() {
+
+    if (filteredRows.length === 0) {
+
+        alert("No records available to export.");
+
+        return;
+
+    }
+
+
+    let csv =
+        "ID,Date/Time,Source IP,Destination IP,Protocol,Prediction,Confidence,Severity\n";
+
+
+    filteredRows.forEach(row => {
+
+        csv +=
+            `"${row.dataset.id}",` +
+            `"${row.dataset.date}",` +
+            `"${row.dataset.source}",` +
+            `"${row.dataset.destination}",` +
+            `"${row.dataset.protocol}",` +
+            `"${row.dataset.prediction}",` +
+            `"${row.dataset.confidence}%","${row.dataset.severity}"\n`;
+
+    });
+
+
+    const blob =
+        new Blob(
+            [csv],
+            { type: "text/csv;charset=utf-8;" }
+        );
+
+
+    const url =
+        URL.createObjectURL(blob);
+
+
+    const link =
+        document.createElement("a");
+
+
+    link.href = url;
+
+    link.download =
+        "prediction_history.csv";
+
+
+    document.body.appendChild(link);
+
+    link.click();
+
+    document.body.removeChild(link);
+
+    URL.revokeObjectURL(url);
+
+}
+
+
+/* ==========================================
+   CHART
+========================================== */
+
+function createChart() {
+
+    let normal = 0;
+    let malicious = 0;
+
+    let critical = 0;
+    let high = 0;
+    let medium = 0;
+    let low = 0;
+
+
+    allRows.forEach(row => {
+
+        if (
+            row.dataset.prediction === "Normal"
+        ) {
+
+            normal++;
+
+        } else {
+
+            malicious++;
+
+        }
+
+
+        if (
+            row.dataset.severity === "CRITICAL"
+        ) {
+
+            critical++;
+
+        } else if (
+            row.dataset.severity === "HIGH"
+        ) {
+
+            high++;
+
+        } else if (
+            row.dataset.severity === "MEDIUM"
+        ) {
+
+            medium++;
+
+        } else {
+
+            low++;
+
+        }
+
+    });
+
+
+    const ctx =
+        document
+        .getElementById("historyChart")
+        .getContext("2d");
+
+
+    new Chart(ctx, {
+
+        type: "bar",
+
+        data: {
+
+            labels: [
+                "Normal",
+                "Malicious",
+                "Low",
+                "Medium",
+                "High",
+                "Critical"
+            ],
+
+            datasets: [
+
+                {
+
+                    label: "Detection Count",
+
+                    data: [
+                        normal,
+                        malicious,
+                        low,
+                        medium,
+                        high,
+                        critical
+                    ]
+
+                }
+
+            ]
+
+        },
+
+        options: {
+
+            responsive: true,
+
+            maintainAspectRatio: false,
+
+            plugins: {
+
+                legend: {
+                    display: false
+                }
+
+            },
+
+            scales: {
+
+                y: {
+
+                    beginAtZero: true,
+
+                    ticks: {
+                        precision: 0
+                    }
+
+                }
+
+            }
+
+        }
+
+    });
+
+}
+
+</script>
+
+{% endblock %}

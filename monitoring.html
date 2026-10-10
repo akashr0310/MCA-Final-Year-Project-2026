@@ -1,0 +1,437 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2>Real-Time Threat Monitoring</h2>
+        <p class="text-muted mb-0">
+            Live monitoring of simulated network-flow records
+        </p>
+    </div>
+
+    <div>
+        <span id="statusBadge" class="badge bg-secondary">
+            STOPPED
+        </span>
+    </div>
+</div>
+
+
+<!-- Control buttons -->
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+
+        <button
+            id="startButton"
+            class="btn btn-success me-2"
+            onclick="startMonitoring()">
+
+            ▶ Start Monitoring
+
+        </button>
+
+        <button
+            id="stopButton"
+            class="btn btn-danger"
+            onclick="stopMonitoring()"
+            disabled>
+
+            ■ Stop Monitoring
+
+        </button>
+
+    </div>
+</div>
+
+
+<!-- Statistics -->
+
+<div class="row g-3 mb-4">
+
+    <div class="col-md-3">
+
+        <div class="card shadow-sm">
+
+            <div class="card-body">
+
+                <h6>Total Traffic</h6>
+
+                <h2 id="totalTraffic">
+                    0
+                </h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="col-md-3">
+
+        <div class="card shadow-sm">
+
+            <div class="card-body">
+
+                <h6>Normal Traffic</h6>
+
+                <h2 id="normalTraffic">
+                    0
+                </h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="col-md-3">
+
+        <div class="card shadow-sm">
+
+            <div class="card-body">
+
+                <h6>Malicious Traffic</h6>
+
+                <h2 id="maliciousTraffic">
+                    0
+                </h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="col-md-3">
+
+        <div class="card shadow-sm">
+
+            <div class="card-body">
+
+                <h6>Critical Threats</h6>
+
+                <h2 id="criticalThreats">
+                    0
+                </h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- Live traffic table -->
+
+<div class="card shadow-sm">
+
+    <div class="card-body">
+
+        <h4 class="mb-3">
+            Live Threat Detection
+        </h4>
+
+        <div class="table-responsive">
+
+            <table class="table table-striped table-hover">
+
+                <thead class="table-dark">
+
+                    <tr>
+
+                        <th>Time</th>
+
+                        <th>Protocol</th>
+
+                        <th>Prediction</th>
+
+                        <th>Confidence</th>
+
+                        <th>Severity</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="trafficTable">
+
+                    <tr>
+
+                        <td colspan="5"
+                            class="text-center">
+
+                            Click
+                            <strong>
+                                Start Monitoring
+                            </strong>
+                            to begin.
+
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+let monitoringInterval = null;
+
+let totalTraffic = 0;
+let normalTraffic = 0;
+let maliciousTraffic = 0;
+let criticalThreats = 0;
+
+
+function startMonitoring() {
+
+    if (monitoringInterval !== null) {
+        return;
+    }
+
+    document.getElementById("statusBadge").innerText =
+        "RUNNING";
+
+    document.getElementById("statusBadge").className =
+        "badge bg-success";
+
+    document.getElementById("startButton").disabled =
+        true;
+
+    document.getElementById("stopButton").disabled =
+        false;
+
+
+    // Generate first record immediately
+    getLiveTraffic();
+
+
+    // Generate traffic every 3 seconds
+    monitoringInterval = setInterval(
+        getLiveTraffic,
+        3000
+    );
+}
+
+
+function stopMonitoring() {
+
+    if (monitoringInterval !== null) {
+
+        clearInterval(
+            monitoringInterval
+        );
+
+        monitoringInterval = null;
+    }
+
+
+    document.getElementById("statusBadge").innerText =
+        "STOPPED";
+
+    document.getElementById("statusBadge").className =
+        "badge bg-secondary";
+
+    document.getElementById("startButton").disabled =
+        false;
+
+    document.getElementById("stopButton").disabled =
+        true;
+}
+
+
+async function getLiveTraffic() {
+
+    try {
+
+        const response =
+            await fetch(
+                "{{ url_for('monitoring_api') }}"
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Server returned an error"
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        updateStatistics(data);
+
+        addTrafficRow(data);
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Monitoring error:",
+            error
+        );
+
+    }
+}
+
+
+function updateStatistics(data) {
+
+    totalTraffic++;
+
+    if (data.prediction === "Normal") {
+
+        normalTraffic++;
+
+    }
+    else {
+
+        maliciousTraffic++;
+
+    }
+
+
+    if (data.severity === "CRITICAL") {
+
+        criticalThreats++;
+
+    }
+
+
+    document.getElementById(
+        "totalTraffic"
+    ).innerText = totalTraffic;
+
+
+    document.getElementById(
+        "normalTraffic"
+    ).innerText = normalTraffic;
+
+
+    document.getElementById(
+        "maliciousTraffic"
+    ).innerText = maliciousTraffic;
+
+
+    document.getElementById(
+        "criticalThreats"
+    ).innerText = criticalThreats;
+}
+
+
+function addTrafficRow(data) {
+
+    const table =
+        document.getElementById(
+            "trafficTable"
+        );
+
+
+    // Remove initial message
+    if (
+        table.children.length === 1 &&
+        table.children[0].innerText.includes(
+            "Start Monitoring"
+        )
+    ) {
+
+        table.innerHTML = "";
+
+    }
+
+
+    const row =
+        document.createElement("tr");
+
+
+    let severityClass =
+        "text-success";
+
+
+    if (data.severity === "MEDIUM") {
+
+        severityClass =
+            "text-warning";
+
+    }
+    else if (data.severity === "HIGH") {
+
+        severityClass =
+            "text-danger";
+
+    }
+    else if (data.severity === "CRITICAL") {
+
+        severityClass =
+            "text-danger fw-bold";
+
+    }
+
+
+    row.innerHTML = `
+
+        <td>
+            ${data.timestamp}
+        </td>
+
+        <td>
+            ${data.protocol_type}
+        </td>
+
+        <td>
+            ${data.prediction}
+        </td>
+
+        <td>
+            ${(data.confidence * 100).toFixed(2)}%
+        </td>
+
+        <td class="${severityClass}">
+            ${data.severity}
+        </td>
+
+    `;
+
+
+    table.insertBefore(
+        row,
+        table.firstChild
+    );
+
+
+    // Keep only latest 15 records
+    while (
+        table.children.length > 15
+    ) {
+
+        table.removeChild(
+            table.lastChild
+        );
+
+    }
+
+}
+
+</script>
+
+{% endblock %}
